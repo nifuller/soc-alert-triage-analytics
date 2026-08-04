@@ -1,4 +1,3 @@
-# soc-alert-triage-analytics
 # SOC Alert Triage Analytics
 
 > Turning 2.8M raw network flows into a prioritized, tuned alert queue — the way a SOC analyst actually works.
