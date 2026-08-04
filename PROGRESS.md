@@ -5,13 +5,13 @@
 > Do Phase 1–4 end-to-end with **one rule** first, then expand. A working narrow pipeline beats a half-built wide one.
 
 ## Phase 0 — Setup
-- [ ] Create GitHub repo, add `README.md` stub and `.gitignore` (ignore `data/`)
-- [ ] Set up Python env (pandas, numpy, matplotlib; streamlit optional)
-- [ ] Add `requirements.txt`
+- [X] Create GitHub repo, add `README.md` stub and `.gitignore` (ignore `data/`)
+- [X] Set up Python env (pandas, numpy, matplotlib; streamlit optional)
+- [X] Add `requirements.txt`
 
 ## Phase 1 — Get & clean the data
-- [ ] Download the **`GeneratedLabelledFlows`** version of CIC-IDS2017 (has Source IP + Timestamp)
-- [ ] Pull Tuesday (brute force) and Wednesday (DoS) + Monday (benign baseline)
+- [X] Download the **`GeneratedLabelledFlows`** version of CIC-IDS2017 (has Source IP + Timestamp)
+- [X] Pull Tuesday (brute force) and Wednesday (DoS) + Monday (benign baseline)
 - [ ] Strip leading spaces from column names
 - [ ] Replace `inf` with `NaN`, handle missing values
 - [ ] Drop the duplicate `Fwd Header Length.1` column
