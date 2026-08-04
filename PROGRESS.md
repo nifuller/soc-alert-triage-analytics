@@ -12,9 +12,9 @@
 ## Phase 1 — Get & clean the data
 - [X] Download the **`GeneratedLabelledFlows`** version of CIC-IDS2017 (has Source IP + Timestamp)
 - [X] Pull Tuesday (brute force) and Wednesday (DoS) + Monday (benign baseline)
-- [ ] Strip leading spaces from column names
-- [ ] Replace `inf` with `NaN`, handle missing values
-- [ ] Drop the duplicate `Fwd Header Length.1` column
+- [X] Strip leading spaces from column names
+- [X] Replace `inf` with `NaN`, handle missing values
+- [X] Drop the duplicate `Fwd Header Length.1` column
 
 ## Phase 2 — Baseline
 - [ ] Load Monday (all benign)
