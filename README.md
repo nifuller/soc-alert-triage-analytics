@@ -12,6 +12,8 @@ Most intrusion-detection projects stop at "train a classifier, report accuracy."
 
 The deliverable is not a model. It's the **triage analytics layer** on top of detections, plus a dashboard that makes the queue actionable.
 
+> **Build plan:** see [`CHECKLIST.md`](PROGRESS.md) for the phase-by-phase roadmap and progress.
+
 ## Key results
 
 <!-- TODO: fill these in once your pipeline runs -->

@@ -1,0 +1,54 @@
+# SOC Alert Triage — Build Checklist
+
+> Companion to the [`README.md`](README.md) — these phases mirror the approach documented there. Keep the two in sync if scope changes.
+
+> Do Phase 1–4 end-to-end with **one rule** first, then expand. A working narrow pipeline beats a half-built wide one.
+
+## Phase 0 — Setup
+- [ ] Create GitHub repo, add `README.md` stub and `.gitignore` (ignore `data/`)
+- [ ] Set up Python env (pandas, numpy, matplotlib; streamlit optional)
+- [ ] Add `requirements.txt`
+
+## Phase 1 — Get & clean the data
+- [ ] Download the **`GeneratedLabelledFlows`** version of CIC-IDS2017 (has Source IP + Timestamp)
+- [ ] Pull Tuesday (brute force) and Wednesday (DoS) + Monday (benign baseline)
+- [ ] Strip leading spaces from column names
+- [ ] Replace `inf` with `NaN`, handle missing values
+- [ ] Drop the duplicate `Fwd Header Length.1` column
+
+## Phase 2 — Baseline
+- [ ] Load Monday (all benign)
+- [ ] Compute per-port percentiles for: packet rate, flow duration, byte rate, IAT
+- [ ] Save/print thresholds each rule will use
+
+## Phase 3 — Detection rules
+- [ ] **Brute force:** candidate filter (auth ports, small/short flows) → attempts-per-source-per-minute
+- [ ] **DoS flood:** port 80 + high packet rate (Hulk, GoldenEye)
+- [ ] **DoS low-and-slow:** long duration + near-zero throughput + high IAT (slowloris, Slowhttptest)
+- [ ] Confirm all thresholds come from the baseline, not hardcoded numbers
+
+## Phase 4 — Generate & score alerts
+- [ ] Run rules across Tuesday/Wednesday to produce the alert set
+- [ ] Score each rule vs. labels: TP / FP / FN, precision, recall
+
+## Phase 5 — Triage analytics
+- [ ] Alert volume over time (by hour, by attack type)
+- [ ] False-positive rate per rule + signal-to-noise ranking
+- [ ] Noisiest sources / destinations
+- [ ] Priority score to sort the queue
+- [ ] The tuning tradeoff: "drop the noisiest rule → how much coverage is lost?"
+
+## Phase 6 — Dashboard
+- [ ] Build in Splunk (reinforces certs) **and/or** Streamlit (browser-clickable)
+- [ ] Capture a screenshot for the README
+
+## Phase 7 — Write-up
+- [ ] Finish README: fill in the results numbers + dashboard screenshot
+- [ ] (Optional) MITRE ATT&CK mapping table
+- [ ] Draft the resume bullet with your real numbers
+- [ ] Push, clean commit history, confirm README renders
+
+## Stretch
+- [ ] Extend to Thursday (web attacks) / Friday (DDoS, port scan, botnet)
+- [ ] Group alerts into incidents (campaign view)
+- [ ] Mock SLA metrics (mean time to acknowledge / triage)
