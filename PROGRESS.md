@@ -17,9 +17,9 @@
 - [X] Drop the duplicate `Fwd Header Length.1` column
 
 ## Phase 2 — Baseline
-- [ ] Load Monday (all benign)
-- [ ] Compute per-port percentiles for: packet rate, flow duration, byte rate, IAT
-- [ ] Save/print thresholds each rule will use
+- [X] Load Monday (all benign)
+- [X] Compute per-port percentiles for: packet rate, flow duration, byte rate, IAT
+- [X] Save/print thresholds each rule will use
 
 ## Phase 3 — Detection rules
 - [ ] **Brute force:** candidate filter (auth ports, small/short flows) → attempts-per-source-per-minute
