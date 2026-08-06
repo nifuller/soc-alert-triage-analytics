@@ -51,16 +51,12 @@ def save_to_csv(port_80_results_dict):
     Args:
         port_80_results_dict (Dict): Is passed the port 809 results dictionary
     """
-    rows = []
-    for (metric, port), metrics_dict in port_80_results_dict.items():
-        row = {
-            'Metric': metric,
-            'Port': port,
-            **metrics_dict
-        }
-        rows.append(row)
+    rows = [
+        {'Metric': feat, 'Port': port, **vals}
+        for (feat, port), vals in port_80_results_dict.items()
+    ]       
     df = pd.DataFrame(rows)
-    df.to_csv("network_metrics_monday.csv", index=False)
+    df.to_csv("threshold.csv", index=False)
 
 def main():
     baseline_results = get_baseline()
