@@ -45,3 +45,18 @@ def brute_force_alerts(df):
      alerts = cand[cand["is_alert"]].drop(columns=["ts", "window", "is_alert"])
      alerts["rule"] = "brute_force_rate"
      return alerts
+ 
+def dos_flood_alerts(df, thr):
+    """_summary_
+
+    Args:
+        df (_type_): _description_
+        thr (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    alerts = df[(df["Destination Port"] == HTTP_PORT) &
+                (df["Flow Packets/s"] > thr[("Flow Packets/s", HTTP_PORT)])].copy()
+    alerts["rule"] = "dos_flood"
+    return alerts
