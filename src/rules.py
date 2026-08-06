@@ -17,7 +17,7 @@ def load_threshold(path="threshold.csv"):
         _type_: _description_
     """
     tdf = pd.read_csv(path).dropna(subset=["Metric"])
-    tdf["value"] = pd.to_numeric(tdf["value"])
+    tdf["Value"] = pd.to_numeric(tdf["Value"])
     return tdf.set_index(["Metric", "Port"])["Value"].to_dict()
 
 def brute_force_alerts(df):
@@ -37,7 +37,7 @@ def brute_force_alerts(df):
      
      cand["window"] = cand["ts"].dt.floor("60s")
      keys = ["Source IP", "Destination IP", "Destination Port", "window"]
-     counts = cand.groupby(keys).size().rename("attemps").reset_index()
+     counts = cand.groupby(keys).size().rename("attempts").reset_index()
      
      hot_keys = set(map(tuple, counts.loc[counts["attempts"] > ATTEMPT_PER_MIN, keys].values))
      cand["is_alert"] = [tuple(k) in hot_keys for k in cand[keys].values]
@@ -71,7 +71,7 @@ def dos_slow_alerts(df, thr):
     Returns:
         _type_: _description_
     """
-    alerts = df[(df["Destination Ports"] == HTTP_PORT) &
+    alerts = df[(df["Destination Port"] == HTTP_PORT) &
                 (df["Flow Duration"] > thr[("Flow Duration", HTTP_PORT)]) &
                 (df["Flow Bytes/s"] < thr[("Flow Bytes/s", HTTP_PORT)]) &
                 (df["Flow IAT Max"] > thr[("Flow IAT Max", HTTP_PORT)])].copy()

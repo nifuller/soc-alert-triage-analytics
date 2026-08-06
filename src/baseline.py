@@ -35,11 +35,11 @@ def get_baseline():
             baseline = f"{cond_feat} > p{int(cond_level*100)}"
         
         col = base[feature].dropna()
-        port_80_results_dict[(feature, 80)] = {"value": col.quantile(level),
-                                            "direction": direction,
-                                            "level": level,
-                                            "n": int(len(col)),
-                                            "baseline": baseline}
+        port_80_results_dict[(feature, 80)] = {"Value": col.quantile(level),
+                                            "Direction": direction,
+                                            "Level": level,
+                                            "N": int(len(col)),
+                                            "Baseline": baseline}
 
     # print(port_80_results_dict)
     return port_80_results_dict

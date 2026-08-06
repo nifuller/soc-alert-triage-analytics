@@ -22,9 +22,9 @@
 - [X] Save/print thresholds each rule will use
 
 ## Phase 3 — Detection rules
-- [ ] **Brute force:** candidate filter (auth ports, small/short flows) → attempts-per-source-per-minute
-- [ ] **DoS flood:** port 80 + high packet rate (Hulk, GoldenEye)
-- [ ] **DoS low-and-slow:** long duration + near-zero throughput + high IAT (slowloris, Slowhttptest)
+- [X] **Brute force:** candidate filter (auth ports, small/short flows) → attempts-per-source-per-minute
+- [X] **DoS flood:** port 80 + high packet rate (Hulk, GoldenEye)
+- [X] **DoS low-and-slow:** long duration + near-zero throughput + high IAT (slowloris, Slowhttptest)
 - [ ] Confirm all thresholds come from the baseline, not hardcoded numbers
 
 ## Phase 4 — Generate & score alerts
