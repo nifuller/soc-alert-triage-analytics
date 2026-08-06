@@ -60,3 +60,36 @@ def dos_flood_alerts(df, thr):
                 (df["Flow Packets/s"] > thr[("Flow Packets/s", HTTP_PORT)])].copy()
     alerts["rule"] = "dos_flood"
     return alerts
+
+def dos_slow_alerts(df, thr):
+    """_summary_
+
+    Args:
+        df (_type_): _description_
+        thr (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    alerts = df[(df["Destination Ports"] == HTTP_PORT) &
+                (df["Flow Duration"] > thr[("Flow Duration", HTTP_PORT)]) &
+                (df["Flow Bytes/s"] < thr[("Flow Bytes/s", HTTP_PORT)]) &
+                (df["Flow IAT Max"] > thr[("Flow IAT Max", HTTP_PORT)])].copy()
+    alerts["rule"] = "dos_low_and_slow"
+    return alerts
+
+def run_all_rules():
+    """_summary_
+
+    Returns:
+        _type_: _description_
+    """
+    monday_df, tuesday_df, wednesday_df = clean_data()
+    thr = load_threshold()
+    
+    alerts = pd.concat([
+        brute_force_alerts(tuesday_df),
+        dos_flood_alerts(wednesday_df, thr),
+        dos_slow_alerts(wednesday_df, thr),
+    ], ignore_index=True)
+    return alerts
