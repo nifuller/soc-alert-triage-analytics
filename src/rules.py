@@ -19,3 +19,29 @@ def load_threshold(path="threshold.csv"):
     tdf = pd.read_csv(path).dropna(subset=["Metric"])
     tdf["value"] = pd.to_numeric(tdf["value"])
     return tdf.set_index(["Metric", "Port"])["Value"].to_dict()
+
+def brute_force_alerts(df):
+     """_summary_
+
+     Args:
+         df (_type_): _description_
+
+     Returns:
+         _type_: _description_
+     """
+     cand = df[df["Destination Port"].isin(AUTH_PORTS) &
+               (df["Total Fwd Packets"] <= MAX_FWD_PACKES)].copy()
+     
+     cand["ts"] = pd.to_datetime(cand["Timestamp"], dayfirst=True, errors="coerce")
+     cand = cand.dropna(subset=["ts"])
+     
+     cand["window"] = cand["ts"].dt.floor("60s")
+     keys = ["Source IP", "Destination IP", "Destination Port", "window"]
+     counts = cand.groupby(keys).size().rename("attemps").reset_index()
+     
+     hot_keys = set(map(tuple, counts.loc[counts["attempts"] > ATTEMPT_PER_MIN, keys].values))
+     cand["is_alert"] = [tuple(k) in hot_keys for k in cand[keys].values]
+     
+     alerts = cand[cand["is_alert"]].drop(columns=["ts", "window", "is_alert"])
+     alerts["rule"] = "brute_force_rate"
+     return alerts
