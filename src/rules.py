@@ -93,3 +93,20 @@ def run_all_rules():
         dos_slow_alerts(wednesday_df, thr),
     ], ignore_index=True)
     return alerts
+
+def save_alerts(alerts, path="alerts.csv"):
+    """_summary_
+
+    Args:
+        alerts (_type_): _description_
+        path (str, optional): _description_. Defaults to "alerts.csv".
+    """
+    alerts.to_csv(path, index=False)
+    
+def main():
+    alerts = run_all_rules()
+    print(alerts["rule"].value_counts())
+    save_alerts(alerts)
+    
+if __name__ == "__main__":
+    main()
