@@ -4,7 +4,7 @@ from clean import clean_data
 RULES_TARGETS = {
     "brute_force_rate": ["FTP-Patator", "SSH-Patator"],
     "dos_flood": ["DoS Hulk", "DoS GoldenEye"],
-    "dos_low_and_slow": ["DoS slowloris", "Dos Slowhttptest"],
+    "dos_low_and_slow": ["DoS slowloris", "DoS Slowhttptest"],
 }
 
 RULE_DAY = {
@@ -84,14 +84,45 @@ def score(alerts_df, tp):
         })
     
     return pd.DataFrame(rows)
+
+def score_per_attack(alerts_df, tp):
+    _, tue, wed = clean_data()
+    totals = {
+        "tuesday": tue["Label"].value_counts(),
+        "wednesday": wed["Label"].value_counts()
+    }
+    
+    rows = []
+    for rule, attacks in RULES_TARGETS.items():
+        fired = alerts_df[alerts_df["rule"] == rule]
+        rule_tp = sum(tp.get(a, 0) for a in attacks)
+        rule_fp = len(fired) - rule_tp
+        
+        rule_precision = rule_tp / (rule_tp + rule_fp) if (rule_tp + rule_fp) else 0
+        
+        day = totals[RULE_DAY[rule]]
+        for a in attacks:
+            a_tp = tp.get(a, 0)
+            a_total = int(day.get(a, 0))
+            a_fn = a_total - a_tp
+            a_recall = a_tp / a_total if a_total else 0
+            rows.append({
+                "rule": rule,
+                "attack": a,
+                "TP": a_tp,
+                "total_in_data": a_total,
+                "FN": a_fn,
+                "recall": round(a_recall, 3),
+                "rule_precision": round(rule_precision, 3),
+            })
+    return pd.DataFrame(rows)
     
 def main():
     # get_orig_labels()
     alerts_df = read_csv()
     tp = count_true_pos_per_attack()
-    table = score(alerts_df, tp)
-    print(table.to_string(index=False))
-    pass
+    print(score(alerts_df, tp).to_string(index=False))
+    print(score_per_attack(alerts_df, tp).to_string(index=False))
 
 if __name__ == "__main__":
     main()
