@@ -2,7 +2,7 @@ import pandas as pd
 from clean import clean_data
 
 RULES_TARGETS = {
-    "brutef_force_rate": ["FTP-Patator", "SSH-Patator"],
+    "brute_force_rate": ["FTP-Patator", "SSH-Patator"],
     "dos_flood": ["DoS Hulk", "DoS GoldenEye"],
     "dos_low_andslow": ["DoS slowloris", "Dos Slowhttptest"],
 }
@@ -39,10 +39,23 @@ def read_csv(path="alerts.csv"):
     
     return alerts_df
 
-
+def count_true_pos():
+    alerts_df = read_csv()
+    counts = alerts_df["Label"].value_counts()
+    tp = {attack: int(counts.get(attack, 0))
+          for attacks in RULES_TARGETS.values()
+          for attack in attacks}
+    
+    # print(tp)
+    return tp
+    
+    
+    
 def main():
     # get_orig_labels()
     # read_csv()
+    count_true_pos()
+    pass
 
 if __name__ == "__main__":
     main()

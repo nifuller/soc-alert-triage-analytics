@@ -105,7 +105,8 @@ def save_alerts(alerts, path="alerts.csv"):
     
 def main():
     alerts = run_all_rules()
-    print(alerts["rule"].value_counts())
+    # print(alerts["rule"].value_counts())
+    # print(alerts['Label'].value_counts())
     save_alerts(alerts)
     
 if __name__ == "__main__":
