@@ -2,7 +2,6 @@
 
 > Turning 2.8M raw network flows into a prioritized, tuned alert queue — the way a SOC analyst actually works.
 
-<!-- TODO: add badges once set up, e.g. Python version, license -->
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -20,6 +19,63 @@ The deliverable is not a model. It's the **triage analytics layer** on top of de
 - Reduced simulated alert volume by **__%** while retaining **__%** attack coverage
 - Ranked **__** detection rules by precision; identified the **__** noisiest
 - Triage dashboard sorts the queue by a priority score derived from severity + confidence
+
+## Before Tuning
+
+The detection rules were tested against the **CIC-IDS2017** traffic. Baseline thresholds for these detection rules were created using Monday's benign data. The rules were tested against Tuesday (brute force) and Wednesday (DoS). These results were achieved before tuning the thresholds/rules.
+
+| Rule | Targets | Alerts | TP | FP | FN | Precision | Recall |
+|------|---------|-------:|---:|---:|---:|----------:|-------:|
+| brute_force_rate | FTP-Patator, SSH-Patator | 6,886 | 6,886 | 0 | 6,949 | 1.000 | 0.498 |
+| dos_flood | DoS Hulk, DoS GoldenEye | 31,421 | 31,201 | 220 | 210,165 | 0.993 | 0.129 |
+| dos_low_and_slow | DoS slowloris, DoS Slowhttptest | 101 | 91 | 10 | 11,204 | 0.901 | 0.008 |
+
+### Per-attack breakdown
+
+The rule level recall shows a variation between each attack type. Notice that most are visible. Yet for the flood rules, **DoS Hulk** carries it almost entirely whereas **DoS GoldenEye** is close to being undetectable.
+
+| Rule | Attack | TP | Total | FN | Recall |
+|------|--------|---:|------:|---:|-------:|
+| brute_force_rate | FTP-Patator | 3,978 | 7,938 | 3,960 | 0.501 |
+| brute_force_rate | SSH-Patator | 2,908 | 5,897 | 2,989 | 0.493 |
+| dos_flood | DoS Hulk | 31,189 | 231,073 | 199,884 | 0.135 |
+| dos_flood | DoS GoldenEye | 12 | 10,293 | 10,281 | 0.001 |
+| dos_low_and_slow | DoS slowloris | 43 | 5,796 | 5,753 | 0.007 |
+| dos_low_and_slow | DoS Slowhttptest | 48 | 5,499 | 5,451 | 0.009 |
+
+### Findings
+
+All three rules showcased a high precision while also displaying a low recall before tuning. The thresholds were initially set to be highly conservative, being able to correctly detect attacks but each rule missed a majority of its attacks.
+
+- **Brute Force** achieved a near perfect precision while capped at *50%* recall. This is a direct artifact of the candidate packet count filter.
+
+- **Flood** threshold was initially set too high and the results from this is a high precision and a low recall. **DoS Hulk** was only identified *13.5%* of the time and **DoS GoldenEye** was basically invisible with a *0.1%* effectively being missed.
+
+- **Low and Slow** has high precision but the threshold was too strict since it was derived from a small long lived flow sample thus missing most slow attacks.
+
+## After tuning
+
+Each rule has one primary threshold driving its recall. I adjusted them one
+at a time, re-scored, and recorded the effect. The goal was to recover recall
+without collapsing precision.
+
+| Change | Rule | Before (P / R) | After (P / R) | Δ Recall |
+|--------|------|:--------------:|:-------------:|:--------:|
+| Loosened candidate packet-count filter | brute_force_rate | 1.000 / 0.498 | _ / _ | _ |
+| Lowered flow packet-rate threshold | dos_flood | 0.993 / 0.129 | _ / _ | _ |
+| Loosened throughput threshold | dos_low_and_slow | 0.901 / 0.008 | _ / _ | _ |
+
+### What changed and why
+
+- **Brute force —**
+- **Flood —**
+- **Low-and-slow —**
+
+### Tuned per-attack recall
+<!-- TODO: tuned per-attack recall -->
+
+### Takeaway
+<!-- TODO: write takeaway -->
 
 ## Dataset
 
@@ -47,8 +103,8 @@ This project uses the **`GeneratedLabelledFlows`** files (not the ML-only CSVs),
 | Rule | Attack | Key signal |
 |------|--------|-----------|
 | Brute force | FTP/SSH Patator | Attempt **rate per source** to an auth port (not any single flow) |
-| DoS — flood | Hulk, GoldenEye | High packet rate on port 80 |
-| DoS — low & slow | slowloris, Slowhttptest | Long-lived flow + near-zero throughput |
+| DoS flood | Hulk, GoldenEye | High packet rate on port 80 |
+| DoS low & slow | slowloris, Slowhttptest | Long-lived flow + near-zero throughput |
 
 All thresholds are derived from the benign baseline (percentile-based), not hardcoded. See `src/rules.py`.
 
