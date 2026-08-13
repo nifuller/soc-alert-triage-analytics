@@ -1,4 +1,4 @@
 rule,targets,alerts,TP,FP,FN,precision,recall
-brute_force_rate,"FTP-Patator, SSH-Patator",11371,11371,0,2464,1.0,0.822
-dos_flood,"DoS Hulk, DoS GoldenEye",53996,48018,5978,193348,0.889,0.199
-dos_low_and_slow,"DoS slowloris, DoS Slowhttptest",10852,7243,3609,4052,0.667,0.641
+brute_force_rate,"FTP-Patator, SSH-Patator",6886,6886,0,6949,1.0,0.498
+dos_flood,"DoS Hulk, DoS GoldenEye",31421,31145,276,210221,0.991,0.129
+dos_low_and_slow,"DoS slowloris, DoS Slowhttptest",101,42,59,11253,0.416,0.004

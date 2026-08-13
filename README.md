@@ -15,10 +15,9 @@ The deliverable is not a model. It's the **triage analytics layer** on top of de
 
 ## Key results
 
-<!-- TODO: fill these in once your pipeline runs -->
-- Reduced simulated alert volume by **__%** while retaining **__%** attack coverage
-- Ranked **__** detection rules by precision; identified the **__** noisiest
-- Triage dashboard sorts the queue by a priority score derived from severity + confidence
+- Built three explainable detection rules on labeled CIC-IDS2017 network flows, scored against ground truth, then tuned each and measured the effect.
+- Improved recall across all three rules. Brute force 0.50 -> 0.82 (precision held at 1.00), low-and-slow 0.008 -> 0.64 via targeted, one knob at a time tuning.
+- Isolated the low-and-slow bottleneck by per-condition analysis, and identified two attacks types (GoldenEye, Slowhttptest) the current features can't detect. 
 
 ## Before Tuning
 
@@ -27,8 +26,8 @@ The detection rules were tested against the **CIC-IDS2017** traffic. Baseline th
 | Rule | Targets | Alerts | TP | FP | FN | Precision | Recall |
 |------|---------|-------:|---:|---:|---:|----------:|-------:|
 | brute_force_rate | FTP-Patator, SSH-Patator | 6,886 | 6,886 | 0 | 6,949 | 1.000 | 0.498 |
-| dos_flood | DoS Hulk, DoS GoldenEye | 31,421 | 31,201 | 220 | 210,165 | 0.993 | 0.129 |
-| dos_low_and_slow | DoS slowloris, DoS Slowhttptest | 101 | 91 | 10 | 11,204 | 0.901 | 0.008 |
+| dos_flood | DoS Hulk, DoS GoldenEye | 31,421 | 31,145 | 276 | 210,221 | 0.991 | 0.129 |
+| dos_low_and_slow | DoS slowloris, DoS Slowhttptest | 101 | 42 | 59 | 11,253 | 0.416 | 0.004 |
 
 ### Per-attack breakdown
 
@@ -38,12 +37,12 @@ The rule level recall shows a variation between each attack type. Notice that mo
 |------|--------|---:|------:|---:|-------:|
 | brute_force_rate | FTP-Patator | 3,978 | 7,938 | 3,960 | 0.501 |
 | brute_force_rate | SSH-Patator | 2,908 | 5,897 | 2,989 | 0.493 |
-| dos_flood | DoS Hulk | 31,189 | 231,073 | 199,884 | 0.135 |
-| dos_flood | DoS GoldenEye | 12 | 10,293 | 10,281 | 0.001 |
-| dos_low_and_slow | DoS slowloris | 43 | 5,796 | 5,753 | 0.007 |
-| dos_low_and_slow | DoS Slowhttptest | 48 | 5,499 | 5,451 | 0.009 |
+| dos_flood | DoS Hulk | 31,145 | 231,073 | 199,928 | 0.135 |
+| dos_flood | DoS GoldenEye | 0 | 10,293 | 10,293 | 0.000 |
+| dos_low_and_slow | DoS slowloris | 42 | 5,796 | 5,754 | 0.007 |
+| dos_low_and_slow | DoS Slowhttptest | 0 | 5,499 | 5,499 | 0.000 |
 
-### Findings
+### Findings Pre Tuned
 
 All three rules showcased a high precision while also displaying a low recall before tuning. The thresholds were initially set to be highly conservative, being able to correctly detect attacks but each rule missed a majority of its attacks.
 
@@ -51,7 +50,7 @@ All three rules showcased a high precision while also displaying a low recall be
 
 - **Flood** threshold was initially set too high and the results from this is a high precision and a low recall. **DoS Hulk** was only identified *13.5%* of the time and **DoS GoldenEye** was basically invisible with a *0.1%* effectively being missed.
 
-- **Low and Slow** has high precision but the threshold was too strict since it was derived from a small long lived flow sample thus missing most slow attacks.
+- **Low and Slow** started weak on both axes (precision 0.42, recall 0.004). Its duration threshold, derived from benign traffic's extreme tail, excluded nearly every real slow attack.
 
 ## After tuning
 
@@ -61,21 +60,29 @@ without collapsing precision.
 
 | Change | Rule | Before (P / R) | After (P / R) | Δ Recall |
 |--------|------|:--------------:|:-------------:|:--------:|
-| Loosened candidate packet-count filter | brute_force_rate | 1.000 / 0.498 | _ / _ | _ |
-| Lowered flow packet-rate threshold | dos_flood | 0.993 / 0.129 | _ / _ | _ |
-| Loosened throughput threshold | dos_low_and_slow | 0.901 / 0.008 | _ / _ | _ |
+| Loosened candidate packet-count filter | brute_force_rate | 1.000 / 0.498 | 1.000 / 0.822 | +0.324 |
+| Lowered flow packet-rate threshold | dos_flood | 0.991 / 0.129 | 0.889 / 0.199 | +0.070 |
+| Loosened throughput threshold | dos_low_and_slow | 0.416 / 0.004 | 0.667 / 0.641 | +0.633 |
 
 ### What changed and why
 
-- **Brute force —**
-- **Flood —**
-- **Low-and-slow —**
+- **Brute force —** After loosening the candidate filter (MAX_FWD_PACKETS 8 -> 20) the recall rate nearly doubled thus confirming that the count filter was discarding nearly half of every attack before the rate rule ran. Loosening the candidate filter came at a zero precision cost.
+- **Flood —** The packet-rate threshold was lowered (99.5th->90th percentile of benign.) This was able to recover some of the Hulk coverage as a small dip in precision but ultimately it revealed the feature's limit rather than improving.
+- **Low-and-slow —** First the throughput threshold was loosened (bytes/s p05 -> p25, a ~40x wider bar) and no improvement in recall. This null result lead to dissecting each of the rules and conditions by individual pass-rate. The **flow duration** was revealed to be the true bottleneck: only 71 of 11,295 slow-DoS flows cleared the benign derived 119 second threshold. This was due to CICFlowMeter fragments long connections into shorter flow records. By lowering the duration threshold to the benign median recovered recall 160-fold.
 
-### Tuned per-attack recall
-<!-- TODO: tuned per-attack recall -->
+### Findings After Tuned
 
-### Takeaway
-<!-- TODO: write takeaway -->
+- **Brute force was throttled by its own filter** — one change nearly doubled
+  recall at no precision cost. FTP-Patator reached near-perfect recall (1.000);
+  SSH-Patator lagged at 0.582, pointing to the rate threshold as the next lever.
+- **Two attacks resist the current feature set.** DoS GoldenEye stays at 0.000
+  recall — it isn't a per-flow packet-rate flood, so no threshold on that feature
+  will catch it; it needs a different signal entirely.
+- **DoS recall gains came at a precision cost** (flood 0.99 → 0.89, slow 0.42 →
+  0.67) — a real tradeoff, not a clean win.
+- **Overall:** conservative thresholds gave high precision but poor recall;
+  targeted per-rule tuning improved recall across all three rules while
+  surfacing attack types the current features can't detect.
 
 ## Dataset
 

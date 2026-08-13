@@ -17,18 +17,18 @@ def get_baseline():
 
     #store the features to be used as baseline DoS port 80
     #pre tuned
-    # features = [('Flow Packets/s', 0.995, "high", None), 
-    #             ('Flow Duration', 0.99, "high", None), 
-    #             ('Flow Bytes/s', 0.05, "low", ("Flow Duration", 0.99)),
-    #             ('Flow IAT Max', 0.95, "high", None)]
-    
-    #tuned; 
-    # 1. tuned flow packets/s threshold from 0.995 -> 0.90
-    # 2. tuned flow bytes/s threshold from 0.05 -> 0.25
-    features = [('Flow Packets/s', 0.90, "high", None), 
-                ('Flow Duration', 0.50, "high", None), 
-                ('Flow Bytes/s', 0.25, "low", ("Flow Duration", 0.99)),
+    features = [('Flow Packets/s', 0.995, "high", None), 
+                ('Flow Duration', 0.99, "high", None), 
+                ('Flow Bytes/s', 0.05, "low", ("Flow Duration", 0.99)),
                 ('Flow IAT Max', 0.95, "high", None)]
+    
+    # #tuned; 
+    # # 1. tuned flow packets/s threshold from 0.995 -> 0.90
+    # # 2. tuned flow bytes/s threshold from 0.05 -> 0.25
+    # features = [('Flow Packets/s', 0.90, "high", None), 
+    #             ('Flow Duration', 0.50, "high", None), 
+    #             ('Flow Bytes/s', 0.25, "low", ("Flow Duration", 0.99)),
+    #             ('Flow IAT Max', 0.95, "high", None)]
 
     #loop over the features and calculate the percentile 
     port_80_results_dict = {}
