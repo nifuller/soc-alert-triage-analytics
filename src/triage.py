@@ -7,6 +7,12 @@ RULES_LIST = [
     "dos_low_and_slow"
 ]
 
+RULES_TARGETS = {
+    "brute_force_rate": ["FTP-Patator", "SSH-Patator"],
+    "dos_flood": ["DoS Hulk", "DoS GoldenEye"],
+    "dos_low_and_slow": ["DoS slowloris", "DoS Slowhttptest"],
+}
+
 def load_alert(path="alerts.csv"):
     """_summary_
 
@@ -82,6 +88,36 @@ def alert_vol_over_time(alerts_df):
     
     return hourly_alerts_count
 
+def is_false_positive(row):
+    targets = RULES_TARGETS.get(row["rule"], [])
+    return row["Label"] not in targets
+
+def noisiest_sources(alerts_df):
+    """_summary_
+
+    Args:
+        alerts_df (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    
+    alerts_df["is_fp"] = alerts_df.apply(is_false_positive, axis=1)
+    
+    fps = alerts_df[alerts_df["is_fp"]]
+    
+    top_talkers = fps.groupby("Source IP").size().sort_values(ascending=False).head(10)
+    
+    noisiest_raw_FP_count = fps.groupby("rule").size().sort_values(ascending=False)
+    
+    benign_tripping_rule = fps.groupby(["rule", "Label"]).size().sort_values(ascending=False)
+    
+    print(top_talkers)
+    print(noisiest_raw_FP_count)
+    print(benign_tripping_rule)
+    
+    return top_talkers, noisiest_raw_FP_count, benign_tripping_rule
+
 
 
 def main():
@@ -90,6 +126,9 @@ def main():
     results_df, _ = load_results()
     rank_rules_by_noise(results_df)
     alert_vol_over_time(alerts_df)
+    noisiest_sources(alerts_df)
+    
+    
 
 if __name__ == '__main__':
     main()
