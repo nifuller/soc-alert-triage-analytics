@@ -35,7 +35,7 @@
 
 - [X] Run rules across Tuesday/Wednesday to produce the alert set
 - [X] Score each rule vs. labels: TP / FP / FN, precision, recall
-- [ ] Tune each rule/threshold to try and achieve a higher recall without collapsing precision.
+- [X] Tune each rule/threshold to try and achieve a higher recall without collapsing precision.
 
 ## Phase 5 — Triage analytics
 
