@@ -1,7 +1,7 @@
 rule,attack,TP,total_in_data,FN,recall,rule_precision
-brute_force_rate,FTP-Patator,3978,7938,3960,0.501,1.0
-brute_force_rate,SSH-Patator,2908,5897,2989,0.493,1.0
-dos_flood,DoS Hulk,31145,231073,199928,0.135,0.991
-dos_flood,DoS GoldenEye,0,10293,10293,0.0,0.991
-dos_low_and_slow,DoS slowloris,42,5796,5754,0.007,0.416
-dos_low_and_slow,DoS Slowhttptest,0,5499,5499,0.0,0.416
+brute_force_rate,FTP-Patator,7936,7938,2,1.0,1.0
+brute_force_rate,SSH-Patator,3435,5897,2462,0.582,1.0
+dos_flood,DoS Hulk,48018,231073,183055,0.208,0.889
+dos_flood,DoS GoldenEye,0,10293,10293,0.0,0.889
+dos_low_and_slow,DoS slowloris,3192,5796,2604,0.551,0.667
+dos_low_and_slow,DoS Slowhttptest,4051,5499,1448,0.737,0.667

@@ -1,13 +1,15 @@
 import pandas as pd
 from clean import clean_data
 
-#pre tuned values 
+
 AUTH_PORTS = {21, 22}
-MAX_FWD_PACKES = 8 
 ATTEMPT_PER_MIN = 20
+## pre tuned values 
+# MAX_FWD_PACKES = 8 
+
 
 #tuned values
-# MAX_FWD_PACKES = 20
+MAX_FWD_PACKES = 20
 
 
 HTTP_PORT = 80
