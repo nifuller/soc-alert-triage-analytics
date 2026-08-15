@@ -159,14 +159,24 @@ def calculate_magnitude(alerts_df, thresh_df):
     
     return alerts_df
 
-def alerts_per_source_IP(alerts_df):
-    
-    
-    
-    
-    
-    pass
+def alerts_per_source_ip(alerts_df):
+    """_summary_
 
+    Args:
+        alerts_df (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    # print(alerts_df.groupby("rule")["Source IP"].nunique())
+    
+    source_ip_count= alerts_df.groupby("Source IP").size()
+    # print(source_ip_count)
+    alerts_df["source_volume"] = alerts_df["Source IP"].map(source_ip_count).fillna(0)
+    alerts_df["source_volume_log"] = np.log1p(alerts_df["source_volume"])
+
+    return alerts_df
+    
 def assign_priority_score():
     pass
 
@@ -181,7 +191,8 @@ def main():
     alert_vol_over_time(alerts_df)
     mark_false_positive(alerts_df)
     noisiest_sources(alerts_df)
-    # calculate_magnitude(alerts_df, thresh_df)
+    calculate_magnitude(alerts_df, thresh_df)
+    alerts_per_source_ip(alerts_df)
     
     
 
