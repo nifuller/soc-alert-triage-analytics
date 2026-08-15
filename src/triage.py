@@ -112,11 +112,14 @@ def noisiest_sources(alerts_df):
     
     benign_tripping_rule = fps.groupby(["rule", "Label"]).size().sort_values(ascending=False)
     
-    print(top_talkers)
-    print(noisiest_raw_FP_count)
-    print(benign_tripping_rule)
+    # print(top_talkers)
+    # print(noisiest_raw_FP_count)
+    # print(benign_tripping_rule)
     
     return top_talkers, noisiest_raw_FP_count, benign_tripping_rule
+
+def assign_priority_score():
+    pass
 
 
 

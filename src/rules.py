@@ -46,11 +46,17 @@ def brute_force_alerts(df):
      keys = ["Source IP", "Destination IP", "Destination Port", "window"]
      counts = cand.groupby(keys).size().rename("attempts").reset_index()
      
-     hot_keys = set(map(tuple, counts.loc[counts["attempts"] > ATTEMPT_PER_MIN, keys].values))
-     cand["is_alert"] = [tuple(k) in hot_keys for k in cand[keys].values]
+    #  hot_keys = set(map(tuple, counts.loc[counts["attempts"] > ATTEMPT_PER_MIN, keys].values))
+    #  cand["is_alert"] = [tuple(k) in hot_keys for k in cand[keys].values]
      
-     alerts = cand[cand["is_alert"]].drop(columns=["ts", "window", "is_alert"])
+    #  alerts = cand[cand["is_alert"]].drop(columns=["ts", "window", "is_alert"])
+    #  alerts["rule"] = "brute_force_rate"
+    
+     cand = cand.merge(counts, on=keys, how="left")
+     alerts = cand[cand["attempts"] > ATTEMPT_PER_MIN].copy()
+     alerts = alerts.drop(columns=["ts", "window"])
      alerts["rule"] = "brute_force_rate"
+    
      return alerts
  
 def dos_flood_alerts(df, thr):
