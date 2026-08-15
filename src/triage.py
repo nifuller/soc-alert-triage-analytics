@@ -102,9 +102,9 @@ def alert_vol_over_time(alerts_df):
     
     return hourly_alerts_count
 
-def is_false_positive(row):
-    targets = RULES_TARGETS.get(row["rule"], [])
-    return row["Label"] not in targets
+def mark_false_positive(alerts_df):
+    targets_per_row = alerts_df["rule"].map(RULES_TARGETS)
+    alerts_df["is_fp"] = [lbl not in tgts for lbl, tgts in zip(alerts_df["Label"], targets_per_row)]
 
 def noisiest_sources(alerts_df):
     """_summary_
@@ -115,20 +115,12 @@ def noisiest_sources(alerts_df):
     Returns:
         _type_: _description_
     """
-    
-    alerts_df["is_fp"] = alerts_df.apply(is_false_positive, axis=1)
-    
     fps = alerts_df[alerts_df["is_fp"]]
     
     top_talkers = fps.groupby("Source IP").size().sort_values(ascending=False).head(10)
-    
     noisiest_raw_FP_count = fps.groupby("rule").size().sort_values(ascending=False)
-    
     benign_tripping_rule = fps.groupby(["rule", "Label"]).size().sort_values(ascending=False)
     
-    # print(top_talkers)
-    # print(noisiest_raw_FP_count)
-    # print(benign_tripping_rule)
     
     return top_talkers, noisiest_raw_FP_count, benign_tripping_rule
 
@@ -167,6 +159,14 @@ def calculate_magnitude(alerts_df, thresh_df):
     
     return alerts_df
 
+def alerts_per_source_IP(alerts_df):
+    
+    
+    
+    
+    
+    pass
+
 def assign_priority_score():
     pass
 
@@ -179,8 +179,9 @@ def main():
     thresh_df = load_thresh()
     rank_rules_by_noise(results_df)
     alert_vol_over_time(alerts_df)
+    mark_false_positive(alerts_df)
     noisiest_sources(alerts_df)
-    calculate_magnitude(alerts_df, thresh_df)
+    # calculate_magnitude(alerts_df, thresh_df)
     
     
 
