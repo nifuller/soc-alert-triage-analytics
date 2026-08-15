@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib as plt
+import numpy as np
 
 RULES_LIST = [
     "brute_force_rate",
@@ -41,6 +42,19 @@ def load_results(results_path="results.csv", attacks_results_path="results_per_a
     results_per_attack_df = pd.read_csv(attacks_results_path)
     
     return results_df, results_per_attack_df
+
+def load_thresh(path="threshold.csv"):
+    """_summary_
+
+    Args:
+        path (str, optional): _description_. Defaults to "threshold.csv".
+
+    Returns:
+        _type_: _description_
+    """
+    thresh_df = pd.read_csv(path)
+    
+    return thresh_df
     
     
 def alert_vol_per_rule(alerts_df):
@@ -118,6 +132,41 @@ def noisiest_sources(alerts_df):
     
     return top_talkers, noisiest_raw_FP_count, benign_tripping_rule
 
+
+
+def calculate_magnitude(alerts_df, thresh_df):
+    """_summary_
+
+    Args:
+        alerts_df (_type_): _description_
+        thresh_df (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    
+    flood_thresh = thresh_df.loc[thresh_df['Metric'] == 'Flow Packets/s', 'Value'].iloc[0]
+    flow_thresh = thresh_df.loc[thresh_df['Metric'] == 'Flow Duration', 'Value'].iloc[0]
+    RATE_THRESHOLD = 20
+    
+    dos_flood_mask = alerts_df["rule"] == "dos_flood"
+    dos_slow_mask = alerts_df["rule"] == "dos_low_and_slow"
+    brute_force_mask = alerts_df["rule"] == "brute_force_rate"
+    
+    alerts_df.loc[dos_flood_mask, "raw_ratio"] = alerts_df.loc[dos_flood_mask, "Flow Packets/s"] / flood_thresh
+    alerts_df.loc[dos_slow_mask, 'raw_ratio'] = alerts_df.loc[dos_slow_mask, "Flow Duration"] / flow_thresh
+    alerts_df.loc[brute_force_mask, 'raw_ratio'] = alerts_df.loc[brute_force_mask, "attempts"] / RATE_THRESHOLD
+    
+    alerts_df["magnitude"] = np.log1p(alerts_df['raw_ratio'])
+    
+    # # sanity checks
+    # print(alerts_df[alerts_df["magnitude"] == alerts_df["magnitude"].min()][["rule", "Flow Packets/s", "Flow Duration", "attempts", "magnitude"]])
+    # print(alerts_df["magnitude"].describe())
+    # print(alerts_df["magnitude"].isna().sum()) # should be 0
+    # print((alerts_df["magnitude"] < 0.69).sum()) # should be ~0
+    
+    return alerts_df
+
 def assign_priority_score():
     pass
 
@@ -127,9 +176,11 @@ def main():
     alerts_df = load_alert()
     alert_vol_per_rule(alerts_df)
     results_df, _ = load_results()
+    thresh_df = load_thresh()
     rank_rules_by_noise(results_df)
     alert_vol_over_time(alerts_df)
     noisiest_sources(alerts_df)
+    calculate_magnitude(alerts_df, thresh_df)
     
     
 
