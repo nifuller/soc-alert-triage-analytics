@@ -56,7 +56,6 @@ def load_thresh(path="threshold.csv"):
     
     return thresh_df
     
-    
 def alert_vol_per_rule(alerts_df):
     """_summary_
 
@@ -176,9 +175,23 @@ def alerts_per_source_ip(alerts_df):
     alerts_df["source_volume_log"] = np.log1p(alerts_df["source_volume"])
 
     return alerts_df
+  
+def assign_priority_score(results_df, alerts_df):
+    SEVERITY = {"dos_flood": 3, "dos_low_and_slow": 3, "brute_force_rate": 1}
+    rule_confidence = dict(zip(results_df['rule'],results_df ['precision']))
     
-def assign_priority_score():
-    pass
+    alerts_df["severity"] = alerts_df["rule"].map(SEVERITY)
+    alerts_df["confidence"] = alerts_df["rule"].map(rule_confidence)
+    alerts_df["priority_rank"] = alerts_df["severity"] * alerts_df["confidence"]
+    alerts_df = alerts_df.sort_values(by=["priority_rank", "magnitude"], ascending=False)
+    alerts_df = alerts_df.reset_index(drop=True)
+    
+    # print(alerts_df.groupby("rule")[["severity", "confidence", "priority_rank"]].first())
+    
+    alerts_df.to_csv('priority_queue.csv', columns=['Source IP', 'Destination IP', 
+                                                    'Destination Port', 'rule',
+                                                    'Label', 'magnitude', 
+                                                    'priority_rank', 'priority_rank'])
 
 
 
@@ -191,8 +204,9 @@ def main():
     alert_vol_over_time(alerts_df)
     mark_false_positive(alerts_df)
     noisiest_sources(alerts_df)
-    calculate_magnitude(alerts_df, thresh_df)
-    alerts_per_source_ip(alerts_df)
+    alerts_df = calculate_magnitude(alerts_df, thresh_df)
+    # alerts_per_source_ip(alerts_df)
+    assign_priority_score(results_df, alerts_df)
     
     
 

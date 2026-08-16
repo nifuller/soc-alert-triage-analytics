@@ -39,9 +39,9 @@
 
 ## Phase 5 — Triage analytics
 
-- [ ] Alert volume over time (by hour, by attack type)
-- [ ] False-positive rate per rule + signal-to-noise ranking
-- [ ] Noisiest sources / destinations
+- [X] Alert volume over time (by hour, by attack type)
+- [X] False-positive rate per rule + signal-to-noise ranking
+- [X] Noisiest sources / destinations
 - [ ] Priority score to sort the queue
 - [ ] The tuning tradeoff: "drop the noisiest rule → how much coverage is lost?"
 
@@ -58,6 +58,7 @@
 - [ ] Push, clean commit history, confirm README renders
 
 ## Stretch
+
 - [ ] Extend to Thursday (web attacks) / Friday (DDoS, port scan, botnet)
 - [ ] Group alerts into incidents (campaign view)
 - [ ] Mock SLA metrics (mean time to acknowledge / triage)
