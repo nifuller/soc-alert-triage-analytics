@@ -67,7 +67,7 @@ def alert_vol_per_rule(alerts_df):
     for rule in RULES_LIST:
         number_of_alerts[rule + "_volume"] = int(alerts_df['rule'].str.contains(rule, na=False).sum())
     
-    print(number_of_alerts)
+    # print(number_of_alerts)
         
 def rank_rules_by_noise(results_df):
     rules_sorted_by_FP = results_df.sort_values(by=["FP"], ascending=False)
@@ -211,7 +211,7 @@ def assign_priority_score(results_df, alerts_df):
     alerts_df.to_csv('priority_queue.csv', columns=['Source IP', 'Destination IP', 
                                                     'Destination Port', 'rule',
                                                     'Label', 'magnitude', 
-                                                    'priority_rank', 'priority_rank'])
+                                                    'priority_rank', 'is_fp'])
 
 def load_priority_queue(path = "priority_queue.csv"):
     """_summary_
@@ -227,7 +227,47 @@ def load_priority_queue(path = "priority_queue.csv"):
     return priority_queue_df
 
 def get_top_n_percent(priority_queue_df):
-    pass
+    """_summary_
+
+    Args:
+        priority_queue_df (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    total_tp = (~priority_queue_df["is_fp"]).sum()
+    total_fp = priority_queue_df["is_fp"].sum()
+    total_alerts = len(priority_queue_df.index)
+    
+    # print(f"Total Alerts: {total_alerts}")
+    # print(f"Total TP: {total_tp}")
+    # print(f"Total FP: {total_fp}")
+    
+    top_n_percent_data_list = []
+    
+    for percentage_cutoff in np.arange(0.1, 1.1, 0.1):
+        percent_slice = priority_queue_df.head(int(total_alerts * percentage_cutoff))
+        percent_slice_tp = (~percent_slice["is_fp"]).sum()
+        percent_slice_fp = percent_slice["is_fp"].sum()
+        
+        coverage_retained = round((percent_slice_tp / total_tp), 3)
+        noise_skipped = round(((total_fp - percent_slice_fp) / total_fp), 3)
+        
+        # print(f"Coverage Retained: {coverage_retained}")
+        # print(f"Noise Skipped: {noise_skipped}")
+        
+        top_n_percent_data = {"cutoff": percentage_cutoff,
+                            "coverage": coverage_retained,
+                            "noise-skipped": noise_skipped}
+        top_n_percent_data_list.append(top_n_percent_data)
+    
+    top_n_percent_df = pd.DataFrame(top_n_percent_data_list, 
+                                    columns=["cutoff", "coverage", "noise-skipped"])
+    # print(top_n_percent_df)
+    # print(priority_queue_df[["priority_rank", "magnitude"]].head(20))
+    
+    return top_n_percent_df
+    
 
 
 def main():
@@ -236,7 +276,7 @@ def main():
     results_df, _ = load_results()
     thresh_df = load_thresh()
     
-    alerts_df = mark_false_positive(alerts_df)
+    alerts_df = mark_false_positive(alerts_df)    
     alert_vol_per_rule(alerts_df)
     rank_rules_by_noise(results_df)
     alert_vol_over_time(alerts_df)
