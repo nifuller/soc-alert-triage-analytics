@@ -1,4 +1,4 @@
-,Source IP,Destination IP,Destination Port,rule,Label,magnitude,priority_rank,is_fp
+,Source IP,Destination IP,Destination Port,rule,Label,magnitude,priority_score,is_fp
 0,172.16.0.1,192.168.10.50,80,dos_flood,DoS Hulk,5.629418059367339,2.667,False
 1,172.16.0.1,192.168.10.50,80,dos_flood,DoS Hulk,5.629418059367339,2.667,False
 2,172.16.0.1,192.168.10.50,80,dos_flood,DoS Hulk,5.629418059367339,2.667,False

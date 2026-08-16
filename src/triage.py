@@ -137,7 +137,32 @@ def noisiest_sources(alerts_df):
     
     return top_talkers, noisiest_raw_FP_count, benign_tripping_rule
 
+def flood_magnitude_composite(alerts_df):
+    """_summary_
 
+    Args:
+        alerts_df (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    flood_mask = alerts_df["rule"] == "dos_flood"
+    flood = alerts_df[flood_mask]
+    
+    flow_packets_col = flood["Flow Packets/s"]
+    flow_bytes_col = flood["Flow Bytes/s"]
+    total_fwd_packets_col = flood["Total Fwd Packets"]
+        
+    norm_packets = (flow_packets_col - flow_packets_col.min()) / (flow_packets_col.max() - flow_packets_col.min())
+    norm_bytes = (flow_bytes_col - flow_bytes_col.min()) / (flow_bytes_col.max() - flow_bytes_col.min())
+    norm_fwd = (total_fwd_packets_col - total_fwd_packets_col.min()) / (total_fwd_packets_col.max() - total_fwd_packets_col.min())
+    
+    composite = (norm_bytes + norm_packets + norm_fwd) / 3
+    
+    alerts_df.loc[flood_mask, "magnitude"] = composite
+    
+    return alerts_df
+    
 
 def calculate_magnitude(alerts_df, thresh_df):
     """_summary_
@@ -154,6 +179,7 @@ def calculate_magnitude(alerts_df, thresh_df):
     flow_thresh = thresh_df.loc[thresh_df['Metric'] == 'Flow Duration', 'Value'].iloc[0]
     RATE_THRESHOLD = 20
     
+    # non_flood = alerts_df["rule"] != "dos_flood"
     dos_flood_mask = alerts_df["rule"] == "dos_flood"
     dos_slow_mask = alerts_df["rule"] == "dos_low_and_slow"
     brute_force_mask = alerts_df["rule"] == "brute_force_rate"
@@ -162,8 +188,12 @@ def calculate_magnitude(alerts_df, thresh_df):
     alerts_df.loc[dos_slow_mask, 'raw_ratio'] = alerts_df.loc[dos_slow_mask, "Flow Duration"] / flow_thresh
     alerts_df.loc[brute_force_mask, 'raw_ratio'] = alerts_df.loc[brute_force_mask, "attempts"] / RATE_THRESHOLD
     
-    alerts_df["magnitude"] = np.log1p(alerts_df['raw_ratio'])
     
+    alerts_df["magnitude"] = np.log1p(alerts_df['raw_ratio'])
+    # alerts_df.loc[non_flood, "magnitude"] = np.log1p(alerts_df.loc[non_flood, "raw_ratio"])
+    
+    # alerts_df = flood_magnitude_composite(alerts_df)
+
     # # sanity checks
     # print(alerts_df[alerts_df["magnitude"] == alerts_df["magnitude"].min()][["rule", "Flow Packets/s", "Flow Duration", "attempts", "magnitude"]])
     # print(alerts_df["magnitude"].describe())
@@ -183,7 +213,7 @@ def alerts_per_source_ip(alerts_df):
     """
     # print(alerts_df.groupby("rule")["Source IP"].nunique())
     
-    source_ip_count= alerts_df.groupby("Source IP").size()
+    source_ip_count = alerts_df.groupby("Source IP").size()
     # print(source_ip_count)
     alerts_df["source_volume"] = alerts_df["Source IP"].map(source_ip_count).fillna(0)
     alerts_df["source_volume_log"] = np.log1p(alerts_df["source_volume"])
@@ -202,8 +232,8 @@ def assign_priority_score(results_df, alerts_df):
     
     alerts_df["severity"] = alerts_df["rule"].map(SEVERITY)
     alerts_df["confidence"] = alerts_df["rule"].map(rule_confidence)
-    alerts_df["priority_rank"] = alerts_df["severity"] * alerts_df["confidence"]
-    alerts_df = alerts_df.sort_values(by=["priority_rank", "magnitude"], ascending=False)
+    alerts_df["priority_score"] = alerts_df["severity"] * alerts_df["confidence"]
+    alerts_df = alerts_df.sort_values(by=["priority_score", "magnitude"], ascending=False)
     alerts_df = alerts_df.reset_index(drop=True)
     
     # print(alerts_df.groupby("rule")[["severity", "confidence", "priority_rank"]].first())
@@ -211,7 +241,7 @@ def assign_priority_score(results_df, alerts_df):
     alerts_df.to_csv('priority_queue.csv', columns=['Source IP', 'Destination IP', 
                                                     'Destination Port', 'rule',
                                                     'Label', 'magnitude', 
-                                                    'priority_rank', 'is_fp'])
+                                                    'priority_score', 'is_fp'])
 
 def load_priority_queue(path = "priority_queue.csv"):
     """_summary_
@@ -263,8 +293,8 @@ def get_top_n_percent(priority_queue_df):
     
     top_n_percent_df = pd.DataFrame(top_n_percent_data_list, 
                                     columns=["cutoff", "coverage", "noise-skipped"])
-    # print(top_n_percent_df)
-    # print(priority_queue_df[["priority_rank", "magnitude"]].head(20))
+    print(top_n_percent_df)
+    print(priority_queue_df[["priority_score", "magnitude"]].head(20))
     
     
     top_n_percent_df.to_csv('top_n_percent.csv')
@@ -272,7 +302,8 @@ def get_top_n_percent(priority_queue_df):
     return top_n_percent_df
     
 
-
+    
+    
 def main():
     alerts_df = load_alert()
     
@@ -283,11 +314,10 @@ def main():
     alert_vol_per_rule(alerts_df)
     rank_rules_by_noise(results_df)
     alert_vol_over_time(alerts_df)
-    mark_false_positive(alerts_df)
     noisiest_sources(alerts_df)
     
     alerts_df = calculate_magnitude(alerts_df, thresh_df)
-    alerts_per_source_ip(alerts_df)
+    alerts_df = alerts_per_source_ip(alerts_df)
     assign_priority_score(results_df, alerts_df)
     
     priority_queue_df = load_priority_queue()
