@@ -256,7 +256,7 @@ def get_top_n_percent(priority_queue_df):
         # print(f"Coverage Retained: {coverage_retained}")
         # print(f"Noise Skipped: {noise_skipped}")
         
-        top_n_percent_data = {"cutoff": percentage_cutoff,
+        top_n_percent_data = {"cutoff": round(percentage_cutoff, 1),
                             "coverage": coverage_retained,
                             "noise-skipped": noise_skipped}
         top_n_percent_data_list.append(top_n_percent_data)
@@ -265,6 +265,9 @@ def get_top_n_percent(priority_queue_df):
                                     columns=["cutoff", "coverage", "noise-skipped"])
     # print(top_n_percent_df)
     # print(priority_queue_df[["priority_rank", "magnitude"]].head(20))
+    
+    
+    top_n_percent_df.to_csv('top_n_percent.csv')
     
     return top_n_percent_df
     
