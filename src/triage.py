@@ -102,9 +102,23 @@ def alert_vol_over_time(alerts_df):
     return hourly_alerts_count
 
 def mark_false_positive(alerts_df):
+    """_summary_
+
+    Args:
+        alerts_df (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    
     targets_per_row = alerts_df["rule"].map(RULES_TARGETS)
     alerts_df["is_fp"] = [lbl not in tgts for lbl, tgts in zip(alerts_df["Label"], targets_per_row)]
-
+    
+    return alerts_df
+    
+    
+    
+    
 def noisiest_sources(alerts_df):
     """_summary_
 
@@ -176,7 +190,13 @@ def alerts_per_source_ip(alerts_df):
 
     return alerts_df
   
-def assign_priority_score(results_df, alerts_df):
+def assign_priority_score(results_df, alerts_df):    
+    """_summary_
+
+    Args:
+        results_df (_type_): _description_
+        alerts_df (_type_): _description_
+    """
     SEVERITY = {"dos_flood": 3, "dos_low_and_slow": 3, "brute_force_rate": 1}
     rule_confidence = dict(zip(results_df['rule'],results_df ['precision']))
     
@@ -193,20 +213,42 @@ def assign_priority_score(results_df, alerts_df):
                                                     'Label', 'magnitude', 
                                                     'priority_rank', 'priority_rank'])
 
+def load_priority_queue(path = "priority_queue.csv"):
+    """_summary_
+
+    Args:
+        path (str, optional): _description_. Defaults to "priority_queue.csv".
+
+    Returns:
+        _type_: _description_
+    """
+    priority_queue_df = pd.read_csv(path)
+    
+    return priority_queue_df
+
+def get_top_n_percent(priority_queue_df):
+    pass
 
 
 def main():
     alerts_df = load_alert()
-    alert_vol_per_rule(alerts_df)
+    
     results_df, _ = load_results()
     thresh_df = load_thresh()
+    
+    alerts_df = mark_false_positive(alerts_df)
+    alert_vol_per_rule(alerts_df)
     rank_rules_by_noise(results_df)
     alert_vol_over_time(alerts_df)
     mark_false_positive(alerts_df)
     noisiest_sources(alerts_df)
+    
     alerts_df = calculate_magnitude(alerts_df, thresh_df)
-    # alerts_per_source_ip(alerts_df)
+    alerts_per_source_ip(alerts_df)
     assign_priority_score(results_df, alerts_df)
+    
+    priority_queue_df = load_priority_queue()
+    get_top_n_percent(priority_queue_df)
     
     
 
