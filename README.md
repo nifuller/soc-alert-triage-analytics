@@ -4,6 +4,9 @@
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![Live Dashboard](https://img.shields.io/badge/live-dashboard-brightgreen)](https://soc-alert-triage-analytics-mis5procputny5xj4rm47t.streamlit.app/)
+
+🔗 **[Live dashboard](https://soc-alert-triage-analytics-mis5procputny5xj4rm47t.streamlit.app/)** — interactive triage queue, scorecard, and coverage analysis
 
 ## Overview
 
