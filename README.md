@@ -109,6 +109,10 @@ Confidence is drawn directly from the tuned scorecard, so the ranking stays in s
 
 Walking down the sorted queue, at each cutoff: what fraction of true attacks is captured (**coverage**), and what fraction of false positives is avoided by not working the rest (**noise skipped**)?
 
+![Coverage vs noise by queue depth](figures/coverage_curve.png)
+
+*Coverage tracks the random-ordering diagonal whereas within-tier ranking doesn't concentrate true positives, but noise-skipped stays above 0.95 through the first 60% of the queue, showing the ranking pushes false positives to the bottom.*
+
 | Top N% of queue | Coverage retained | Noise skipped |
 |:---------------:|:-----------------:|:-------------:|
 | 10% | 0.113 | 0.992 |
@@ -131,9 +135,6 @@ Walking down the sorted queue, at each cutoff: what fraction of true attacks is 
 ### What would improve it
 
 Bending the coverage curve requires a per-alert signal that correlates with true-vs-false-positive which a detection improvement, not a ranking one. The natural next step is a lightweight per-alert confidence model (a classifier over flow features) to score alerts within a tier, replacing threshold-distance magnitude. Noted as future work.
-
-
-
 
 ## Dataset
 
