@@ -215,7 +215,7 @@ streamlit run dashboard/app.py
 │   ├── score.py          # TP/FP/FN vs. labels
 │   └── triage.py         # alert-queue analytics
 ├── dashboard/
-│   └── app.py            # Splunk exports / Streamlit app
+│   └── app.py            # Streamlit app
 ├── figures/
 ├── requirements.txt
 └── README.md
