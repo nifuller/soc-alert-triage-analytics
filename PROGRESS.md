@@ -42,8 +42,8 @@
 - [X] Alert volume over time (by hour, by attack type)
 - [X] False-positive rate per rule + signal-to-noise ranking
 - [X] Noisiest sources / destinations
-- [ ] Priority score to sort the queue
-- [ ] The tuning tradeoff: "drop the noisiest rule → how much coverage is lost?"
+- [X] Priority score to sort the queue
+- [X] The tuning tradeoff: "drop the noisiest rule → how much coverage is lost?"
 
 ## Phase 6 — Dashboard
 
