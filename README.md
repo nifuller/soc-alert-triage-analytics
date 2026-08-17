@@ -169,10 +169,32 @@ All thresholds are derived from the benign baseline (percentile-based), not hard
 
 ## Dashboard
 
-<!-- TODO: add a screenshot -->
+An interactive Streamlit dashboard turns the static analysis into a tool an analyst can actually work. It reads the pipeline's saved outputs: the prioritized queue, the scorecard, and the coverage figure and presents them with live filtering.
+
 ![Triage dashboard](figures/dashboard.png)
 
-<!-- TODO: one or two sentences describing the panels -->
+**What it shows:**
+
+- **Detection scorecard** — per-rule precision and recall at a glance
+- **Ranking performance** — the coverage-vs-noise curve
+- **Prioritized queue** — every alert in priority order, with live summary metrics (alerts shown, true positives, false positives, and current false-positive rate)
+
+**Filters (sidebar):**
+
+- **Rule** — show or hide each detection rule's alerts
+- **Hide false positives** — collapse the queue to confirmed detections only
+- **Top N% of queue** — work only the highest-priority slice
+
+The dashboard computes nothing itself, it just reads the CSVs the pipeline produces, keeping presentation decoupled from analysis. Filters apply in sequence (rule → false positives → top N%), and the summary metrics recompute against whatever subset is currently shown.
+
+### Run it
+
+```bash
+pip install -r requirements.txt
+streamlit run dashboard/app.py
+```
+
+> Run from the directory containing the pipeline's output CSVs (`priority_queue.csv`, `results.csv`) and the `figures/` folder, so the app can find them.
 
 ## Repo structure
 

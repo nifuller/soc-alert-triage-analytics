@@ -47,7 +47,7 @@
 
 ## Phase 6 — Dashboard
 
-- [ ] Build in Splunk (reinforces certs) **and/or** Streamlit (browser-clickable)
+- [X] Build in Splunk (reinforces certs) **and/or** Streamlit (browser-clickable)
 - [ ] Capture a screenshot for the README
 
 ## Phase 7 — Write-up
