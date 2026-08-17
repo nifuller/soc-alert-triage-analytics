@@ -186,7 +186,8 @@ All thresholds are derived from the benign baseline (percentile-based), not hard
 │   ├── rules.py          # brute-force + DoS detection rules
 │   ├── score.py          # TP/FP/FN vs. labels
 │   └── triage.py         # alert-queue analytics
-├── dashboard/            # Splunk exports / Streamlit app
+├── dashboard/
+│   └── app.py            # Splunk exports / Streamlit app
 ├── figures/
 ├── requirements.txt
 └── README.md
