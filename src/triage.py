@@ -1,5 +1,5 @@
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import numpy as np
 
 RULES_LIST = [
@@ -275,7 +275,7 @@ def get_top_n_percent(priority_queue_df):
     
     top_n_percent_data_list = []
     
-    for percentage_cutoff in np.arange(0.1, 1.1, 0.1):
+    for percentage_cutoff in np.arange(0.0, 1.1, 0.1):
         percent_slice = priority_queue_df.head(int(total_alerts * percentage_cutoff))
         percent_slice_tp = (~percent_slice["is_fp"]).sum()
         percent_slice_fp = percent_slice["is_fp"].sum()
@@ -293,15 +293,44 @@ def get_top_n_percent(priority_queue_df):
     
     top_n_percent_df = pd.DataFrame(top_n_percent_data_list, 
                                     columns=["cutoff", "coverage", "noise-skipped"])
-    print(top_n_percent_df)
-    print(priority_queue_df[["priority_score", "magnitude"]].head(20))
+    # print(top_n_percent_df)
+    # print(priority_queue_df[["priority_score", "magnitude"]].head(20))
     
     
     top_n_percent_df.to_csv('top_n_percent.csv')
     
     return top_n_percent_df
     
+def plot_coverage(top_n_percent_df):
+    """_summary_
 
+    Args:
+        top_n_percent_df (_type_): _description_
+    """
+    
+    
+    fig, ax = plt.subplots(figsize=(8,4))
+    
+    ax.plot(top_n_percent_df['cutoff'], top_n_percent_df['coverage'], label='coverage', color='blue', marker="o")
+    ax.plot(top_n_percent_df['cutoff'], top_n_percent_df['noise-skipped'], label='noise-skipped', color='orange', marker="o")
+    
+    ax.axline((0.0, 0), slope=1, color='grey', linestyle='--', label="random ordering (reference)")    
+    ax.axvline(x=0.65, color="grey", linestyle=":", alpha=0.6)
+    
+    ax.text(0.66, 0.5, "false positives\nconcentrated below here",
+            fontsize=10, color="black", va="center")
+    
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+
+    ax.set_xlabel("fraction of queue worked")
+    ax.set_ylabel("fraction")
+    ax.set_title("Priority queue: coverage vs. noise")
+    
+    ax.legend(loc="upper left")
+    plt.savefig("figures/coverage_curve.png", dpi=150, bbox_inches="tight")
+    plt.show()
+    
     
     
 def main():
@@ -321,7 +350,8 @@ def main():
     assign_priority_score(results_df, alerts_df)
     
     priority_queue_df = load_priority_queue()
-    get_top_n_percent(priority_queue_df)
+    top_n_percent_df = get_top_n_percent(priority_queue_df)
+    plot_coverage(top_n_percent_df)
     
     
 
