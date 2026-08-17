@@ -84,6 +84,57 @@ without collapsing precision.
   targeted per-rule tuning improved recall across all three rules while
   surfacing attack types the current features can't detect.
 
+## Triage: prioritizing the alert queue
+
+Detection produces alerts; triage decides what an analyst looks at first. This layer ranks the full alert set into a prioritized queue and measures whether that ranking actually front-loads the real attacks.
+
+### Priority score
+
+Each alert is scored on two levels:
+
+- **Tier (severity × confidence)** — a per-rule weight. Severity is assigned by impact (DoS = 3, brute force = 1); confidence is the rule's measured precision from the scorecard. This orders the *rules* against each other.
+- **Magnitude (within tier)** — how far each alert exceeded its rule's threshold, as an exceedance ratio. This orders alerts *within* a tier.
+
+The queue is sorted by tier, then magnitude. Resulting tier order:
+
+| Rule | Severity | Confidence | Tier |
+|------|:--------:|:----------:|:----:|
+| dos_flood | 3 | 0.889 | 2.667 |
+| dos_low_and_slow | 3 | 0.667 | 2.001 |
+| brute_force_rate | 1 | 1.000 | 1.000 |
+
+Confidence is drawn directly from the tuned scorecard, so the ranking stays in sync with measured rule performance.
+
+### Does the ranking work? Top-N% coverage
+
+Walking down the sorted queue, at each cutoff: what fraction of true attacks is captured (**coverage**), and what fraction of false positives is avoided by not working the rest (**noise skipped**)?
+
+| Top N% of queue | Coverage retained | Noise skipped |
+|:---------------:|:-----------------:|:-------------:|
+| 10% | 0.113 | 0.992 |
+| 20% | 0.227 | 0.990 |
+| 30% | 0.338 | 0.967 |
+| 40% | 0.453 | 0.967 |
+| 50% | 0.565 | 0.955 |
+| 60% | 0.680 | 0.953 |
+| 70% | 0.721 | 0.443 |
+| 80% | 0.797 | 0.178 |
+| 90% | 0.886 | 0.000 |
+| 100% | 1.000 | 0.000 |
+
+### Findings
+
+- **The ranking concentrates false positives at the bottom of the queue.** Noise skipped stays above 0.95 through the first 60% of the queue, then falls off a cliff (0.95 → 0.44 → 0.18) as the false positives arrive in a block near the end. An analyst working top-down clears the first 60% of alerts encountering under 5% false positives — the core triage benefit.
+- **Coverage tracks near-linear**, meaning within-tier ranking does not concentrate true positives. Working the top 40% captures ~45% of attacks — barely better than arbitrary ordering.
+- **This is a feature limitation, not a ranking one — proven by elimination.** Single-feature magnitude produced a diagonal curve but left many alerts tied. A composite of three exceedance signals (packet rate, byte rate, forward packets) broke every tie and made the ordering fully deterministic — yet the coverage curve did not move. That rules out "ties were hiding a good ranking": the flow features simply do not separate a real flood from a benign flow that tripped the rule, so no threshold-distance ranking can order them by likelihood of being a true positive.
+
+### What would improve it
+
+Bending the coverage curve requires a per-alert signal that correlates with true-vs-false-positive — a detection improvement, not a ranking one. The natural next step is a lightweight per-alert confidence model (a classifier over flow features) to score alerts within a tier, replacing threshold-distance magnitude. Noted as future work.
+
+
+
+
 ## Dataset
 
 **CIC-IDS2017** — Canadian Institute for Cybersecurity ([source](https://www.unb.ca/cic/datasets/ids-2017.html))
