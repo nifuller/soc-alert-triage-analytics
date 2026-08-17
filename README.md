@@ -45,7 +45,7 @@ The rule level recall shows a variation between each attack type. Notice that mo
 | dos_low_and_slow | DoS slowloris | 42 | 5,796 | 5,754 | 0.007 |
 | dos_low_and_slow | DoS Slowhttptest | 0 | 5,499 | 5,499 | 0.000 |
 
-### Findings Pre Tuned
+### Findings Pre-tuned
 
 All three rules showcased a high precision while also displaying a low recall before tuning. The thresholds were initially set to be highly conservative, being able to correctly detect attacks but each rule missed a majority of its attacks.
 
