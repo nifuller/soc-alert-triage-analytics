@@ -173,6 +173,8 @@ An interactive Streamlit dashboard turns the static analysis into a tool an anal
 
 ![Triage dashboard](figures/dashboard.png)
 
+![Triage dashboard](figures/dashboard_1.png)
+
 **What it shows:**
 
 - **Detection scorecard** — per-rule precision and recall at a glance
