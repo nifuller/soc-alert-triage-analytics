@@ -48,14 +48,14 @@
 ## Phase 6 — Dashboard
 
 - [X] Build in Splunk (reinforces certs) **and/or** Streamlit (browser-clickable)
-- [ ] Capture a screenshot for the README
+- [X] Capture a screenshot for the README
 
 ## Phase 7 — Write-up
 
-- [ ] Finish README: fill in the results numbers + dashboard screenshot
-- [ ] (Optional) MITRE ATT&CK mapping table
-- [ ] Draft the resume bullet with your real numbers
-- [ ] Push, clean commit history, confirm README renders
+- [X] Finish README: fill in the results numbers + dashboard screenshot
+- [X] (Optional) MITRE ATT&CK mapping table
+- [X] Draft the resume bullet with your real numbers
+- [X] Push, clean commit history, confirm README renders
 
 ## Stretch
 

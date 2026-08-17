@@ -6,7 +6,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 [![Live Dashboard](https://img.shields.io/badge/live-dashboard-brightgreen)](https://soc-alert-triage-analytics-mis5procputny5xj4rm47t.streamlit.app/)
 
-🔗 **[Live dashboard](https://soc-alert-triage-analytics-mis5procputny5xj4rm47t.streamlit.app/)** — interactive triage queue, scorecard, and coverage analysis
+🔗 **[Live dashboard](https://soc-alert-triage-analytics-mis5procputny5xj4rm47t.streamlit.app/)** — interactive triage queue, detection scorecard, and coverage analysis _(free tier so it may take ~30s to wake if idle)_
 
 ## Overview
 
@@ -132,6 +132,7 @@ Walking down the sorted queue, at each cutoff: what fraction of true attacks is 
 ### Findings
 
 - **The ranking concentrates false positives at the bottom of the queue.** Noise skipped stays above 0.95 through the first 60% of the queue, then falls off a cliff (0.95 → 0.44 → 0.18) as the false positives arrive in a block near the end. An analyst working top-down clears the first 60% of alerts encountering under 5% false positives which is the core triage benefit.
+-- **Rule overlap inflates the flood queue.** The flood rule fires on ~5,100 benign flows and ~870 slow-DoS flows (slowloris and Slowhttptest) that exceed its packet-rate threshold. Flows already caught by other rules. This overlap, a side effect of lowering the flood threshold during tuning, is a concrete source of the queue noise the ranking pushes to the bottom.
 - **Coverage tracks near-linear**, meaning within-tier ranking does not concentrate true positives. Working the top 40% captures ~45% of attacks which is barely better than arbitrary ordering.
 - **This is a feature limitation, not a ranking one — proven by elimination.** Single-feature magnitude produced a diagonal curve but left many alerts tied. A composite of three exceedance signals (packet rate, byte rate, forward packets) broke every tie and made the ordering fully deterministic which is yet the coverage curve did not move. That rules out "ties were hiding a good ranking": the flow features simply do not separate a real flood from a benign flow that tripped the rule, so no threshold-distance ranking can order them by likelihood of being a true positive.
 
@@ -158,7 +159,7 @@ This project uses the **`GeneratedLabelledFlows`** files (not the ML-only CSVs),
 3. **Detect** — apply explainable rules to generate alerts (see below).
 4. **Score** — compare alerts to ground-truth labels for per-rule TP / FP / FN, precision, recall.
 5. **Triage** — analyze the alert queue: volume over time, FP rate per rule, noisiest sources, priority ranking.
-6. **Dashboard** — surface it all in Splunk / Streamlit.
+6. **Dashboard** — surface it all in Streamlit.
 
 ## Detection rules
 
@@ -237,7 +238,9 @@ python src/score.py
 
 # 5. triage analytics + dashboard
 python src/triage.py
-# streamlit run dashboard/app.py   # if using Streamlit
+
+# 6. Run Streamlit
+streamlit run dashboard/app.py
 ```
 
 ## Skills demonstrated
@@ -245,16 +248,16 @@ python src/triage.py
 - **Detection engineering** — authoring and evaluating explainable rules
 - **Alert triage & tuning** — FP-rate analysis, signal-to-noise ranking, prioritization
 - **Data analytics** — EDA, time-series aggregation, class-imbalance handling (pandas)
-- **SIEM / dashboarding** — Splunk SPL / Streamlit
+- **SIEM / dashboarding** — Streamlit
 - **Security-domain fluency** — TP/FP reasoning, attack taxonomies, MITRE ATT&CK
 
 ## MITRE ATT&CK mapping
 
-<!-- Refine to sub-techniques as you go -->
 | Attack | Technique |
 |--------|-----------|
-| FTP/SSH Patator | T1110 — Brute Force |
-| DoS (Hulk, GoldenEye, slowloris, Slowhttptest) | T1499 — Endpoint Denial of Service |
+| FTP-Patator, SSH-Patator | T1110 — Brute Force |
+| DoS Hulk, DoS GoldenEye | T1499.002 — Endpoint DoS: Service Exhaustion Flood |
+| DoS slowloris, DoS Slowhttptest | T1499.003 — Endpoint DoS: Application Exhaustion Flood |
 
 ## Future work
 
