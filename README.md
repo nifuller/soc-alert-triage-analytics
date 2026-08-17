@@ -124,13 +124,13 @@ Walking down the sorted queue, at each cutoff: what fraction of true attacks is 
 
 ### Findings
 
-- **The ranking concentrates false positives at the bottom of the queue.** Noise skipped stays above 0.95 through the first 60% of the queue, then falls off a cliff (0.95 → 0.44 → 0.18) as the false positives arrive in a block near the end. An analyst working top-down clears the first 60% of alerts encountering under 5% false positives — the core triage benefit.
-- **Coverage tracks near-linear**, meaning within-tier ranking does not concentrate true positives. Working the top 40% captures ~45% of attacks — barely better than arbitrary ordering.
-- **This is a feature limitation, not a ranking one — proven by elimination.** Single-feature magnitude produced a diagonal curve but left many alerts tied. A composite of three exceedance signals (packet rate, byte rate, forward packets) broke every tie and made the ordering fully deterministic — yet the coverage curve did not move. That rules out "ties were hiding a good ranking": the flow features simply do not separate a real flood from a benign flow that tripped the rule, so no threshold-distance ranking can order them by likelihood of being a true positive.
+- **The ranking concentrates false positives at the bottom of the queue.** Noise skipped stays above 0.95 through the first 60% of the queue, then falls off a cliff (0.95 → 0.44 → 0.18) as the false positives arrive in a block near the end. An analyst working top-down clears the first 60% of alerts encountering under 5% false positives which is the core triage benefit.
+- **Coverage tracks near-linear**, meaning within-tier ranking does not concentrate true positives. Working the top 40% captures ~45% of attacks which is barely better than arbitrary ordering.
+- **This is a feature limitation, not a ranking one — proven by elimination.** Single-feature magnitude produced a diagonal curve but left many alerts tied. A composite of three exceedance signals (packet rate, byte rate, forward packets) broke every tie and made the ordering fully deterministic which is yet the coverage curve did not move. That rules out "ties were hiding a good ranking": the flow features simply do not separate a real flood from a benign flow that tripped the rule, so no threshold-distance ranking can order them by likelihood of being a true positive.
 
 ### What would improve it
 
-Bending the coverage curve requires a per-alert signal that correlates with true-vs-false-positive — a detection improvement, not a ranking one. The natural next step is a lightweight per-alert confidence model (a classifier over flow features) to score alerts within a tier, replacing threshold-distance magnitude. Noted as future work.
+Bending the coverage curve requires a per-alert signal that correlates with true-vs-false-positive which a detection improvement, not a ranking one. The natural next step is a lightweight per-alert confidence model (a classifier over flow features) to score alerts within a tier, replacing threshold-distance magnitude. Noted as future work.
 
 
 
