@@ -10,7 +10,7 @@
 
 ## Overview
 
-Most intrusion-detection projects stop at "train a classifier, report accuracy." This one starts where a Security Operations Center's day actually begins: **too many alerts, not enough time.** Using the labeled CIC-IDS2017 network-flow dataset, I generate alerts from explainable detection rules, then analyze and tune that alert queue — measuring false-positive rates, ranking rules by signal-to-noise, and prioritizing what an analyst should look at first.
+Most intrusion-detection projects stop at "train a classifier, report accuracy." This one starts where a Security Operations Center's day actually begins: **too many alerts, not enough time.** Using the labeled CIC-IDS2017 network-flow dataset, I generate alerts from explainable detection rules, then analyze and tune that alert queue so it is measuring false-positive rates, ranking rules by signal-to-noise, and prioritizing what an analyst should look at first.
 
 The deliverable is not a model. It's the **triage analytics layer** on top of detections, plus a dashboard that makes the queue actionable.
 
